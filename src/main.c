@@ -1550,7 +1550,7 @@ TODO: main version 7
 #define NEW_LINE_BETWEEN_CMD() /*\
 	puts("")*/
 
-#define VERSION_STRING()	"01v01d03"
+#define VERSION_STRING()	"01v01d04"
 #define AUTHOR_STRING() \
 	"\033[0;35mJ.E.L"\
 	"\e[0;32m - Jesus Emanuel Luccioni\t\n\e[0;32m"
@@ -1691,14 +1691,16 @@ TODO: main version 7
  */
  typedef struct
  {
-	 const char * ley;
+	 const char * leyend;
  }leyenda_sT;
  typedef struct
  {
      const char * opt ;     /**<@brief valor del tipo int */
-     /*leyenda_sT *leyList;*/
-     const char * leyenda ;
      fx_optiont_pfT fxOption ;  /**<@brief valor del tipo double */
+     /*leyenda_sT * pleyendList;*/
+     const char *leyend;
+     /*const char ** leyenda ;*/
+
  }menu_t;
 
 /*  char * stdstring_find(const char *src,const char *target);*/
@@ -1754,10 +1756,10 @@ TODO: main version 7
  * definimos los string de opcion, leyenda y tambien la funcion para "lg"
  */
 #define LEYEND_lg() \
-    "\t--lg        : Visualiza los datos del LG\n"\
-    "\t--lg on     : Habilita el LG (Base de Datos qTotem)\n"\
-    "\t--lg off    : Deshabilita el LG (Base de Datos qTotem)\n"\
-	"\t--lg log    : Visualiza el Log del Servidor del LG, a la fecha actual\n"
+		"\t--lg        : Visualiza los datos del LG\n"\
+		"\t--lg on     : Habilita el LG (Base de Datos qTotem)\n"\
+		"\t--lg off    : Deshabilita el LG (Base de Datos qTotem)\n"\
+		"\t--lg log    : Visualiza el Log del Servidor del LG, a la fecha actual\n"
 
 #define FUNCTION_lg() option_lg
 #define OPTION_lg	"--lg"
@@ -1780,8 +1782,9 @@ TODO: main version 7
 	 const unsigned char en;
  }list_usb_brief_sT;
 #define LEYEND_usb() \
-    "\t--usb       : Realiza el check de los dispositivos USB que deben estar enumerados.\n"\
-    "\t--usb view  : Visualiza todos los dispositivos conectados a los diferentes HUB USB.\n"/*\
+	"\t--usb       : Realiza el check de los dispositivos USB que deben estar enumerados.\n"\
+    "\t--usb view  : Visualiza todos los dispositivos conectados a los diferentes HUB USB.\n"
+ /*\
     "\t--usb rules : Visualiza el contenido del archivo rules para el LG.\n"\
     "\t--usb update : Actualiza el contenido del archivo rules para el LG.\n"*/
 
@@ -1809,6 +1812,8 @@ TODO: main version 7
   	 "\t--error stacker	: Verifica el estado del Stacker, \"Fuera de Lugar\"\n"\
   	 "\t--error posid	: Verifica si tenemos un error por POS ID, \"error F001\"\n"
 
+
+
  #define FUNCTION_error() option_error
  #define OPTION_error	"--error"
  /*
@@ -1825,6 +1830,7 @@ TODO: main version 7
       "\t--event		: Visualiza Tabla de Eventos que esta dentro de Base de Datos \"qTotem\"\n"\
 	  "\t--event clean	: Limpia la tabla de Eventos dentro de la Base de Datos \"qTotem\"\n"
 
+
   #define FUNCTION_event() option_event
   #define OPTION_event	"--event"
  /*
@@ -1838,7 +1844,8 @@ TODO: main version 7
    * definimos los string de opcion, leyenda y tambien la funcion para "bill"
    */
    #define LEYEND_bill() \
-       "\t--bill		: Visualiza La cantidad de Billetes en Stacker\n"
+     "\t--bill		: Visualiza La cantidad de Billetes en Stacker\n"
+
 
    #define FUNCTION_bill() option_bill
    #define OPTION_bill	"--bill"
@@ -1854,7 +1861,7 @@ TODO: main version 7
    * definimos los string de opcion, leyenda y tambien la funcion para "bill"
    */
    #define LEYEND_ups() \
-       "\t--ups		: Visualiza el Estado Actual de la UPS\n"
+     "\t--ups		: Visualiza el Estado Actual de la UPS\n"
 
    #define FUNCTION_ups() option_ups
    #define OPTION_ups	"--ups"
@@ -1869,7 +1876,7 @@ TODO: main version 7
    * definimos los string de opcion, leyenda y tambien la funcion para "totem"
    */
    #define LEYEND_totem() \
-       "\t--totem		: Visualiza el Estado Actual del totem\n"
+		"\t--totem		: Visualiza el Estado Actual del totem\n"
 
    #define FUNCTION_totem() option_totem
    #define OPTION_totem	"--totem"
@@ -1884,6 +1891,17 @@ TODO: main version 7
   * ──────────────────────────[ Begin section help ]────────────────────────
   * definimos los string de opcion, leyenda y tambien la funcion para "help"
   */
+#define HEAD_help(nmbCmd)\
+	printf(\
+			"Mensaje de Ayuda, para el uso correcto del comando\n"\
+			"Uso:\n\t %s { OPT1 [ARG1|ARG2|...] [OPT2 [ARG1|ARG2]] ...}\n\n",nmbCmd)
+#define TAIL_help(nmbCmd)\
+{\
+	puts("Ejemplo de Uso:");\
+	printf("\t %s --totem --error --event --bill --usb --ups \n",nmbCmd);\
+    printf("\t %s --lg log --lg --error posid \n",nmbCmd);\
+    printf("\t %s --bill --error stacker \n",nmbCmd);\
+}
 
 #define LEYEND_help() "\t--help       : Visualiza este mensaje de ayuda.\n"
 #define FUNCTION_help() option_help
@@ -1898,6 +1916,7 @@ TODO: main version 7
   * definimos los string de opcion, leyenda y tambien la funcion para "version"
   */
 #define LEYEND_version() "\t--version       : Version de la aplicacion "VERSION_STRING()".\n"
+
 #define FUNCTION_version() option_version
 #define OPTION_version	"--version"
 
@@ -1912,6 +1931,7 @@ TODO: main version 7
   * definimos los string de opcion, leyenda y tambien la funcion para "author"
   */
 #define LEYEND_author() "\t--author       : "AUTHOR_STRING()"\n"
+
 #define FUNCTION_author() option_author
 #define OPTION_author	"--author"
 
@@ -1926,7 +1946,7 @@ TODO: main version 7
 #define LEYEND(Opt) LEYEND_##Opt()
 #define FUNCTION(Opt) FUNCTION_##Opt()
 /*-- fill macro function */
-#define menu_FILL(Opt) {OPTION(Opt),LEYEND(Opt),FUNCTION(Opt)}
+#define menu_FILL(Opt) {OPTION(Opt),FUNCTION(Opt),LEYEND(Opt)}
 #define menu_TERMINATOR() {NULL}
 
 
@@ -3054,21 +3074,19 @@ int option_help(char * arg)
 	if(arg != NULL) return 1;
 	/*-- definimos un puntero y lo inicializamos */
 	menu_t *pmenu = menu_option;
-
-	puts("Mensaje de Ayuda, para el uso correcto del comando");
-/*	if(pmenu->opt != NULL)
-		printf("OPCION : "SET_COLOR(FONT,BLUE)"\"%s\""\
-				SET_COLOR(FONT,RESET),pmenu->opt);
-	pmenu++;*/
+	//
+	//puts("");
+	HEAD_help(ptrNmbCmd);
     while(pmenu->opt != NULL)
     {
     	printf("OPCION : "SET_COLOR(FONT,BLUE)"\"%s\""\
     			SET_COLOR(FONT,RESET),pmenu->opt);
 
-        printf("\nUso y Argumentos\n"SET_COLOR(FONT,GREEN)"%s\n"\
-        		SET_COLOR(FONT,RESET),pmenu->leyenda);
+    	printf("\nUso y Argumentos:\n"SET_COLOR(FONT,GREEN)"%s\n"\
+    				SET_COLOR(FONT,RESET),pmenu->leyend);
         pmenu++;
     }
+    TAIL_help(ptrNmbCmd);
 	return 0;
 }
 
@@ -3077,8 +3095,8 @@ int option_version(char *arg)
 	if(arg != NULL) return 1;
 	PRINTF_DEBUG("Comando : "SET_COLOR(FONT,BLUE)"%s\n"\
 	    			,OPTION(version));
-	printf("\t"SET_COLOR(FONT,GREEN)"%s\n"\
-	        		SET_COLOR(FONT,RESET),LEYEND(version));
+	puts("\t"SET_COLOR(FONT,GREEN)"Version de la aplicacion "VERSION_STRING()\
+			SET_COLOR(FONT,RESET));
 	return 0;
 }
 
@@ -3096,8 +3114,8 @@ int option_author(char *arg)
 	}
 	PRINTF_DEBUG("Comando : "SET_COLOR(FONT,BLUE)"%s\n"\
 	    			,OPTION(author));
-	printf("\t"SET_COLOR(FONT,GREEN)"%s\n"\
-			SET_COLOR(FONT,RESET),LEYEND(author));
+	puts("\t"SET_COLOR(FONT,GREEN)"Autor de la Aplicacion: "AUTHOR_STRING()\
+			SET_COLOR(FONT,RESET));
 return 0;
 }
 
