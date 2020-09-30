@@ -2080,7 +2080,7 @@ int main(int argn,char **arg)
 	 * */
 
 	ptrNmbCmd = arg[0];
-	printf("\t\t%s\n\n",ptrNmbCmd);
+	/* printf("\t\t%s\n\n",ptrNmbCmd);*/
 	if(argn > 1)
 	{
 		i = 1;
@@ -3100,10 +3100,6 @@ int option_author(char *arg)
 			SET_COLOR(FONT,RESET),LEYEND(author));
 return 0;
 }
-
-
-
-
 
 
 
