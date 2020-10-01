@@ -46,7 +46,7 @@ extern "C" {
  *          @ref keyboard_getline() 
  *          @ref console_printf()
  */   
-#define __apis_version__    1 
+#define __apis_version__    0
  
 #endif  
 
@@ -218,7 +218,7 @@ TODO: version 02
 *
 */
 #else /* #if (__apis_version__ == 1) */
-#warning "__apis_version__ estabelcido de forma incorrecta"
+/* #warning "__apis_version__ estabelcido de forma incorrecta"*/
 #endif /* #if (__apis_version__ == 1) */
 /*
  * 

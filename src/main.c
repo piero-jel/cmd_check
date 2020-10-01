@@ -65,7 +65,7 @@ macros @ref EXIT_FAIL y @ref EXIT_SUCCESS*/
  * \li + 9, 
  * TODO: __main_version__
  */
-#define __main_version__    7
+#define __main_version__    8
 #endif
 
 
@@ -3074,8 +3074,6 @@ int option_help(char * arg)
 	if(arg != NULL) return 1;
 	/*-- definimos un puntero y lo inicializamos */
 	menu_t *pmenu = menu_option;
-	//
-	//puts("");
 	HEAD_help(ptrNmbCmd);
     while(pmenu->opt != NULL)
     {
@@ -3481,6 +3479,456 @@ char * stdstring_find(const char *src,const char *target)
 └────────────────────────────────────────────────────────────────────────────────────┘
 TODO: main version 8
 */
+#include <libpq-fe.h>
+#include <string.h>
+/* #include <stdlib.h> */
+/*-- solo para eclipse, es automatico en el proceso de compilacion
+ * y lo podmeos agregar desde Project -> Properties -> Patha and Symbols {solapa} symbols */
+/* #define REMOTO_CONNECT */
+
+
+
+/*-- new line between commands*/
+#define NEW_LINE_BETWEEN_CMD() /*\
+	puts("")*/
+
+#define VERSION_STRING()	"01v01d06"
+#define AUTHOR_STRING() \
+	"\033[0;35mJ.E.L"\
+	"\e[0;32m - Jesus Emanuel Luccioni\t\n\e[0;32m"
+
+#define AUTHOR_STRINGbrief() \
+	" + Author : J.E.L (Jesus Emanuel Luccioni)\n"\
+	" - meil: piero.jel@gmail.com\n"
+
+
+/*-- En caso de necesitar imprimir el mensaje de error cunado retorna un valor menor a cero*/
+#if 1
+#define PCLOSE(Stream) pclose(Stream)
+#else
+#define PCLOSE(Stream)\
+{\
+	if(pclose(Stream) < 0)\
+	{\
+		PUTS_DEBUG("Error al cerrar el pipe");\
+		return 1;\
+	}\
+	else\
+	{\
+		PUTS_DEBUG("Se cerro correctamente el PIPE");\
+	}\
+}
+#endif
+
+
+
+
+
+#if (defined(DEBUG_PRINT_DISABLE))
+#define PRINT_STATUS_QUERY(Cond) {Cond;}
+#else
+#define PRINT_STATUS_QUERY(Cond)\
+{\
+	if(Cond)\
+	{\
+		puts("\n\t"SET_COLOR(FONT,RED)\
+				   "EJECUCION FALLO.\n"SET_COLOR(FONT,RESET));\
+    }\
+	else\
+	{\
+		puts("\n\t"SET_COLOR(FONT,GREEN)\
+				"EJECUCION SASTIFACTORIA..\n"SET_COLOR(FONT,RESET));\
+	}\
+}
+#endif /* #if (defined(DEBUG_PRINT_DISABLE)) */
+
+ /**
+ * \typedef fx_optiont_pfT
+ * \brief example de redifinicion puntero a funcion
+ *  prototipo: unsigned int fx (unsigned int,unsigned int);
+ * \note
+ * \warning
+ *
+ */
+ typedef int (*fx_optiont_pfT) (char *arg);
+ /**
+ * \typedef menu_t ;
+ * \brief definimos el tipo de estructura
+ * \ref vtchar
+ * \ref vtint
+ * \ref vtdouble
+ * \note
+ * \warning
+ */
+ typedef struct
+ {
+	 const char * leyend;
+ }leyenda_sT;
+ typedef struct
+ {
+     const char * opt ;     /**<@brief valor del tipo int */
+     fx_optiont_pfT fxOption ;  /**<@brief valor del tipo double */
+     /*leyenda_sT * pleyendList;*/
+     const char *leyend;
+     /*const char ** leyenda ;*/
+
+ }menu_t;
+
+/*  char * stdstring_find(const char *src,const char *target);*/
+ unsigned char getCurrentDate(char *pbuff, size_t len);
+
+ /**
+  * ****************************************************************************//**
+  * \fn int option_lg(char * arg   );
+  * \brief descripcion breve.
+  * \details descripcon detallada.
+  * \param arg : Argumento uno del tipo puntero a char, string .
+  * \return valor de retorno del tipo int.
+  * \note nota sobre la funcion.
+  * \warning mensaje de precaucion sobre la funcion.
+  * \par example :
+   <PRE>
+   op = option_lg("on" );
+   </PRE>
+  *********************************************************************************/
+ int option_lg(char * arg);
+ /**
+  * ****************************************************************************//**
+  * \fn int option_usb(char * arg   );
+  * \brief descripcion breve.
+  * \details descripcon detallada.
+  * \param arg : Argumento uno del tipo puntero a char, string .
+  * \return valor de retorno del tipo int.
+  * \note nota sobre la funcion.
+  * \warning mensaje de precaucion sobre la funcion.
+  * \par example :
+   <PRE>
+   op = option_usb("view" );
+   </PRE>
+  *********************************************************************************/
+ int option_usb(char * arg);
+ int option_error(char * arg);
+ int option_event(char * arg);
+ int option_bill(char * arg);
+ int option_totem(char * arg);
+ int option_ups(char * arg);
+ int option_help(char * arg);
+ int option_version(char *arg);
+ int option_author(char *arg);
+
+
+ fx_optiont_pfT get_funtionOption(menu_t *pmenu, char * option);
+
+/*
+ *
+ * ──────────────────────────[ Begin section lg ]────────────────────────
+ * definimos los string de opcion, leyenda y tambien la funcion para "lg"
+ */
+#define LEYEND_lg() \
+		"\t--lg        : Visualiza los datos del LG\n"\
+		"\t--lg on     : Habilita el LG (Base de Datos qTotem)\n"\
+		"\t--lg off    : Deshabilita el LG (Base de Datos qTotem)\n"\
+		"\t--lg log    : Visualiza el Log del Servidor del LG, a la fecha actual\n"
+
+#define FUNCTION_lg() option_lg
+#define OPTION_lg	"--lg"
+/*
+ * ────────────────────────────[ End section lg ]─────────────────────────
+ */
+/*
+ *
+ * ──────────────────────────[ Begin section usb ]────────────────────────
+ * definimos los string de opcion, leyenda y tambien la funcion para "usb"
+ */
+ typedef struct{
+	 const char * id;
+	/* const char * brief;*/
+	 const unsigned char en;
+ }list_usb_sT;
+
+ typedef struct{
+	 const char * brief;
+	 const unsigned char en;
+ }list_usb_brief_sT;
+#define LEYEND_usb() \
+	"\t--usb       : Realiza el check de los dispositivos USB que deben estar enumerados.\n"\
+    "\t--usb view  : Visualiza todos los dispositivos conectados a los diferentes HUB USB.\n"
+ /*\
+    "\t--usb rules : Visualiza el contenido del archivo rules para el LG.\n"\
+    "\t--usb update : Actualiza el contenido del archivo rules para el LG.\n"*/
+
+#define FUNCTION_usb() option_usb
+#define OPTION_usb	"--usb"
+ /*
+  *
+  * ────────────────────────────[ End section usb ]─────────────────────────
+  *
+  */
+ /*
+  *
+  * ──────────────────────────[ Begin section error ]────────────────────────
+  * definimos los string de opcion, leyenda y tambien la funcion para "error"
+  */
+  typedef struct{
+ 	 const char * id;
+ 	 const char * brief;
+  }list_error_sT;
+
+ #define LEYEND_error() \
+     "\t--error     	: Visualiza los Errores desde la tabla dentro de Base de Datos \"qTotem\"\n"\
+  	 "\t--error clean	: Limpia la tabla de Errores dentro de la Base de Datos \"qTotem\"\n"\
+  	 "\t--error printer	: Verifica el estado de la impresora, \"PRINTER ID\"\n"\
+  	 "\t--error stacker	: Verifica el estado del Stacker, \"Fuera de Lugar\"\n"\
+  	 "\t--error posid	: Verifica si tenemos un error por POS ID, \"error F001\"\n"
+
+ #define FUNCTION_error() option_error
+ #define OPTION_error	"--error"
+ /*
+  *
+  * ────────────────────────────[ End section error ]─────────────────────────
+  *
+  */
+ /*
+  *
+  * ──────────────────────────[ Begin section event ]────────────────────────
+  * definimos los string de opcion, leyenda y tambien la funcion para "event"
+  */
+  #define LEYEND_event() \
+      "\t--event		: Visualiza Tabla de Eventos que esta dentro de Base de Datos \"qTotem\"\n"\
+	  "\t--event clean	: Limpia la tabla de Eventos dentro de la Base de Datos \"qTotem\"\n"
+
+
+  #define FUNCTION_event() option_event
+  #define OPTION_event	"--event"
+ /*
+  *
+  * ────────────────────────────[ End section event ]─────────────────────────
+  *
+  */
+  /*
+   *
+   * ──────────────────────────[ Begin section bill ]────────────────────────
+   * definimos los string de opcion, leyenda y tambien la funcion para "bill"
+   */
+   #define LEYEND_bill() \
+     "\t--bill		: Visualiza La cantidad de Billetes en Stacker\n"
+
+
+   #define FUNCTION_bill() option_bill
+   #define OPTION_bill	"--bill"
+  /*
+   *
+   * ────────────────────────────[ End section event ]─────────────────────────
+   *
+   */
+
+  /*
+   *
+   * ──────────────────────────[ Begin section ups ]────────────────────────
+   * definimos los string de opcion, leyenda y tambien la funcion para "bill"
+   */
+   #define LEYEND_ups() \
+     "\t--ups		: Visualiza el Estado Actual de la UPS\n"
+
+   #define FUNCTION_ups() option_ups
+   #define OPTION_ups	"--ups"
+ /*
+  *
+  * ────────────────────────────[ End section ups ]─────────────────────────
+  *
+  */
+  /*
+   *
+   * ──────────────────────────[ Begin section totem ]────────────────────────
+   * definimos los string de opcion, leyenda y tambien la funcion para "totem"
+   */
+   #define LEYEND_totem() \
+		"\t--totem		: Visualiza el Estado Actual del totem\n"
+
+   #define FUNCTION_totem() option_totem
+   #define OPTION_totem	"--totem"
+ /*
+  *
+  * ────────────────────────────[ End section totem ]─────────────────────────
+  *
+  */
+
+ /*
+  *
+  * ──────────────────────────[ Begin section help ]────────────────────────
+  * definimos los string de opcion, leyenda y tambien la funcion para "help"
+  */
+#define HEAD_help(nmbCmd)\
+	printf(\
+			"Mensaje de Ayuda, para el uso correcto del comando\n"\
+			"Uso:\n\t %s { OPT1 [ARG1|ARG2|...] [OPT2 [ARG1|ARG2]] ...}\n\n",nmbCmd)
+#define TAIL_help(nmbCmd)\
+{\
+	puts("Ejemplo de Uso:");\
+	printf("\t %s --totem --error --event --bill --usb --ups \n",nmbCmd);\
+    printf("\t %s --lg log --lg --error posid \n",nmbCmd);\
+    printf("\t %s --bill --error stacker \n",nmbCmd);\
+}
+
+#define LEYEND_help() "\t--help       : Visualiza este mensaje de ayuda.\n"
+#define FUNCTION_help() option_help
+#define OPTION_help	"--help"
+/*
+ * ────────────────────────────[ End section help ]─────────────────────────
+ */
+
+ /*
+  *
+  * ──────────────────────────[ Begin section version ]────────────────────────
+  * definimos los string de opcion, leyenda y tambien la funcion para "version"
+  */
+#define LEYEND_version() "\t--version       : Version de la aplicacion "VERSION_STRING()".\n"
+
+#define FUNCTION_version() option_version
+#define OPTION_version	"--version"
+
+ /*
+  *
+  * ────────────────────────────[ End section version]─────────────────────────
+  *
+  */
+ /*
+  *
+  * ──────────────────────────[ Begin section author ]────────────────────────
+  * definimos los string de opcion, leyenda y tambien la funcion para "author"
+  */
+#define LEYEND_author() "\t--author       : "AUTHOR_STRING()"\n"
+
+#define FUNCTION_author() option_author
+#define OPTION_author	"--author"
+
+ /*
+  *
+  * ────────────────────────────[ End section author]─────────────────────────
+  *
+  */
+
+
+#define OPTION(Opt) OPTION_##Opt
+#define LEYEND(Opt) LEYEND_##Opt()
+#define FUNCTION(Opt) FUNCTION_##Opt()
+/*-- fill macro function */
+#define menu_FILL(Opt) {OPTION(Opt),FUNCTION(Opt),LEYEND(Opt)}
+#define menu_TERMINATOR() {NULL}
+
+
+
+
+
+menu_t menu_option[] = {
+		menu_FILL(lg)
+		,menu_FILL(usb)
+		,menu_FILL(error)
+		,menu_FILL(event)
+		,menu_FILL(bill)
+		,menu_FILL(ups)
+		,menu_FILL(totem)
+		/**/
+		,menu_FILL(help)
+		,menu_FILL(version)
+		,menu_FILL(author)
+		/* terminador del Menu */
+		,menu_TERMINATOR()
+};
+
+
+#if ( defined(REMOTO_CONNECT))
+#define CONN_INFO() \
+		"user = postgres password = postgres \
+	     hostaddr = 127.0.0.1 port = 5678 \
+		 connect_timeout = 2\
+		 dbname = "
+#else/* #if (REMOTO_CONNECT == 1) */
+#define CONN_INFO() \
+		"user = postgres password = postgres \
+	     hostaddr = 127.0.0.1 port = 5432 \
+		 connect_timeout = 2\
+		 dbname = "
+#endif /*#if (REMOTO_CONNECT == 1)*/
+
+
+
+
+/**
+ * \typedef pFproccessQuery_pfT
+ * \brief redefinicion de un puntero a funcion el cual toma como
+ * argumento el numero de fila 'row', columna 'col' y el estring
+ * campo. El resultado de la consulta en el campo fila columna establecido.
+ * \details descripcion detallada
+ * \note prototipo de funcion "void function (int row,int col, const char *strFied);"
+ * \warning mensaje de precaucion sobre esta redefinicion
+ */
+typedef void (*pFproccessQuery_pfT) (int row,int col, const char *strFied);
+typedef void (*pFemptlyQuery_pfT) (const char *leyendQuery);
+
+typedef struct
+{
+	const char * query; /**<@brief string de la consulta */
+	const char * leyenda; /**<@brief descripcion de la consulta  */
+	pFproccessQuery_pfT proccessQuery; /**<@brief puntero a funcion que llama con el
+	el campo resultado de la consulta */
+	pFemptlyQuery_pfT emptlyQuery;/**<@brief puntero a funcion que llama cuando el resultado
+	de la query esta vacia */
+}query_sT;
+
+typedef struct
+{
+	const char * update; /**<@brief string de la consulta */
+	const char * leyenda; /**<@brief descripcion de la consulta  */
+}update_sT;
+
+/**
+ *
+ * ****************************************************************************//**
+ * \fn int proccessListQuery(const char * connInfo   );
+ * \brief descripcion breve.
+ * \details descripcon detallada.
+ * \param dbName : Nombre de la base de datos.
+ * \param pListQuery : Lista de consultas.
+ * \return valor de retorno del tipo int.
+ * \note nota sobre la funcion.
+ * \warning mensaje de precaucion sobre la funcion.
+ * \par example :
+  <PRE>
+  if( proccessListQuery(arg_1))
+  {
+  	  ...success process
+  }
+  {
+  	  ... failure process
+  }
+  </PRE>
+ *********************************************************************************/
+int proccessQuery(const char *dbName, query_sT *pListQuery);
+int proccessUpdate(const char *dbName, update_sT *pListUpdate);
+int proccessQueryWhere(const char *dbName, query_sT *pListQuery, const char * const *strWhere);
+/**
+ *
+ * ****************************************************************************//**
+ * \fn void print_field_query(int  r ,int c , const char * strQ);
+ * \brief callback, no es llamada como una API. Es llamada automaticamente
+ * al realizar la consulta de la base de datos.
+ * \details descripcon detallada.
+ * \param r : Argumento uno del tipo int.
+ * \param , const char * strQ : Argumento uno del tipo ,int.
+ * \return valor de retorno del tipo void.
+ * \note nota sobre la funcion.
+ * \warning mensaje de precaucion sobre la funcion.
+ *
+ *********************************************************************************/
+void print_field_query(int r,int c, const char *strQ);
+
+void print_emptly_query(const char *stley);
+
+
+
+char *ptrNmbCmd;
+
 /*
  *
  * *******************************************************************
@@ -3493,9 +3941,1203 @@ TODO: main version 8
  * 
  *********************************************************************/
 int main(int argn,char **arg)
-{       
-    exit(EXIT_SUCCESS);    
+{
+
+	int i;
+	fx_optiont_pfT pfxOption;
+
+	/*-- recorremos el array de argumentos
+	 * En la posicion 0, tenemos el path y nombre de la APP
+	 * */
+
+	ptrNmbCmd = arg[0];
+	/* printf("\t\t%s\n\n",ptrNmbCmd);*/
+	if(argn > 1)
+	{
+		i = 1;
+	}
+	else
+	{
+		puts(SET_COLOR(FONT,RED)"\tNo se Ingresaron Argumentos, Secuencia por defecto"SET_COLOR(FONT,RESET));
+		option_totem(NULL);
+		option_error(NULL);
+		option_event(NULL);
+		option_bill(NULL);
+		option_usb(NULL);
+		option_ups(NULL);
+
+		/*-- no debemos saltar al label main_exit*/
+		exit(EXIT_SUCCESS);
+	}
+
+	while(i < argn)
+	{
+		/*printf("\t%d\t%s\n",i,*arg);
+		 *arg++;*/
+		PRINTF_DEBUG("\t%d\t%s\n",i,arg[i]);
+		pfxOption = get_funtionOption(menu_option,arg[i]);
+		if(pfxOption == NULL)
+		{
+			printf("Parametro\t"SET_COLOR(FONT,RED)"\"%s\""\
+					SET_COLOR(FONT,RESET)"\tes incorrecto\n",arg[i]);
+			puts(SET_COLOR(FONT,BLUE)"Visualizando el mensaje de Ayuda:"\
+								SET_COLOR(FONT,RESET));
+			/*print_menu(menu_option);*/
+			option_help(NULL);
+
+			/*exit(EXIT_SUCCESS);*/
+			goto main_exit;
+		}
+		/* En "pfxOption" tenemos le puntero a funcion a la operacion
+		 * debemos buscar el arguemtno si es que tiene
+		 * */
+		i++;
+		if(i == argn)
+		{
+			/* Nos quedamos sin argumentos, llegamos al final*/
+			if((pfxOption)(NULL))
+			{
+				/*printf("Llamado incorrecto con los argumentos %s \n",arg[i-1]);*/
+				printf("Llamado incorrecto: "SET_COLOR(FONT,RED)\
+						"%s\n"\
+						SET_COLOR(FONT,RESET),arg[i-1]);
+				option_help(NULL);
+			}
+			else
+			{
+				PRINTF_DEBUG("Ejecucion sastifactoria de los Argumentos: %s\n",arg[i-1]);
+			}
+			goto main_exit;
+			/* exit(EXIT_SUCCESS); */
+		}
+		/* comprobamos si el siguente argumento pertenece a otra accion */
+		if(get_funtionOption(menu_option,arg[i]) == NULL)
+		{
+			/* Es un argumento para la opcion anterior */
+			if((pfxOption)(arg[i]))
+			{
+				printf("Llamado incorrecto: "SET_COLOR(FONT,RED)\
+						"%s %s\n"\
+						SET_COLOR(FONT,RESET),arg[i-1],arg[i]);
+				option_help(NULL);
+				/*print_menu(menu_option);*/
+				goto main_exit;
+				/* //exit(EXIT_SUCCESS); */
+			}
+			else
+			{
+				PRINTF_DEBUG("Ejecucion sastifactoria de los Argumentos: %s %s\n",arg[i-1],arg[i]);
+			}
+		}
+		else
+		{
+			/* debemos llamar a la opcion sin argumento */
+			i--;
+			if((pfxOption)(NULL))
+			{
+				/*printf("Llamado incorrecto con el argumento: %s\n",arg[i]);*/
+				printf("Llamado incorrecto: "SET_COLOR(FONT,RED)\
+						"%s \n"\
+						SET_COLOR(FONT,RESET),arg[i]);
+				option_help(NULL);
+			}
+			else
+			{
+				PRINTF_DEBUG("Ejecucion sastifactoria con el Argumento: %s\n",arg[i]);
+			}
+		}
+		/*  tomamos un argumentos mas, incrementamos el index */
+		i++;
+	}
+
+main_exit:
+   option_author("AUTHOR");
+   exit(EXIT_SUCCESS);
 }
+
+
+/**
+ *
+ * ****************************************************************************//**
+ * \fn fx_optiont_pfT get_funtionOption(menu_t *pmenu, char * option);
+ * \brief Funcion para obtener el puntero a funcion de la Opcion pasada como
+ * argumeto \ref option.
+ * \param pmenu : Puntero a menu, sobre el cual tenemos definidos las
+ * opciones que pueden ser llamadas y sobre la cual vamos a buscar.
+ * \param option :  string con la opcion a buscar y sobre la cual obtendremos
+ * el puntero a funcion.
+ * \return devolveremos el puntero a funcion correspondiente a la opcion pasada
+ * como \ref option.
+ * 	En caso de devolver un NULL, quiere decir que la opcion no se encontro dentro
+ * 	del menu o bien la opcion esta deshabilitada (ya con no tiene definida una
+ * 	funcion a ejecutar).
+ * \note
+ * \warning
+ * \par example :
+<PRE>
+  pfxOption = get_funtionOption(menu_option,arg[i]);
+  if(pfxOption == NULL)
+  {
+	printf("Parametro \"%s\" es incorrecto",arg[i]);
+	print_menu(menu_option);
+	exit(EXIT_SUCCESS);
+  }
+</PRE>
+ *********************************************************************************/
+fx_optiont_pfT get_funtionOption(menu_t *pmenu, char * option)
+{
+    while(pmenu->opt != NULL)
+    {
+    	if(strcmp(pmenu->opt,option) == 0)
+    	{
+    		return pmenu->fxOption;
+    	}
+    	pmenu++;
+    }
+    return NULL;
+}
+/**
+ *
+ * ****************************************************************************//**
+ * \fn void print_menu(menu_t *pmenu  );
+ * \brief descripcion breve.
+ * \details descripcon detallada.
+ * \param *pmenu : Argumento uno del tipo menu_t.
+ * \return valor de retorno del tipo void.
+ * \note nota sobre la funcion.
+ * \warning mensaje de precaucion sobre la funcion.
+ * \par example :
+  <PRE>
+   print_menu(menu_options);
+  </PRE>
+ *********************************************************************************/
+
+
+
+/* Consultas sobre el LG */
+void proccQuery_lgcheck_0(int row,int col, const char *strFied)
+{
+	static unsigned char st = 0;
+	if(st == 1)
+	{
+		/* Puerto Configuracin TAS*/
+		printf("\t"SET_COLOR(FONT,BLUE)"Puerto Configurado para el LG: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		st = 2;
+		return;
+	}
+	if(st == 2)
+	{
+		/* Puerto Configuracin TAS*/
+		printf("\t"SET_COLOR(FONT,BLUE)"PDS Asignado al Equipo: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		st = 0;
+		return;
+	}
+	switch(col)
+	{
+	case 0:/* Numero TAS*/
+		printf("\n\t"SET_COLOR(FONT,BLUE)"Nro de TAS: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		return;
+	case 1:/* POS ID*/
+		printf("\t"SET_COLOR(FONT,BLUE)"POS ID: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		return;
+	case 2:/* N° Serie LG*/
+		printf("\t"SET_COLOR(FONT,BLUE)"Nro de Serie LG: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		return;
+	case 3:/* N° Serie SAM*/
+		printf("\t"SET_COLOR(FONT,BLUE)"Nro de Serie SAM: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		return;
+	case 4:/* N° Pin SAM*/
+		printf("\t"SET_COLOR(FONT,BLUE)"PIN de SAM: "SET_COLOR(FONT,GREEN)"%s\n"\
+				SET_COLOR(FONT,RESET),strFied);
+		st = 1;
+		return;
+	default:
+		PUTS_DEBUG("\n\t"\
+				SET_COLOR(FONT,RED)\
+				"col Incorrecto.\n"\
+				SET_COLOR(FONT,RESET)\
+		);
+		return;
+	}
+}
+
+
+
+void print_emptly_PDS(const char *stley)
+{
+	puts(" "SET_COLOR(FONT,RED)\
+			"\tSin PDS (Punto de Servicio) Asignado Actualmente"SET_COLOR(FONT,RESET));
+}
+/*
+ 'select dispositivos_fisico_id,posid,lgid,samid,sam_pin from config;' | psql qTotem"
+ 'select puerto_serie_lg from config;' | psql qTotem"
+ 'select \"puntoservicioid\" from \"DevicesBspa\";' | psql bspa"
+ Para esteblecer la cantidad de billetes:
+update billetes set cantidad='50' where parametro='2';
+update billetes set cantidad='10' where parametro='1';
+
+ */
+void printEmptly_listQuery_lgcheck3(const char *pstr)
+{
+	char buff[32];
+	getCurrentDate(buff,sizeof(buff));
+	printf("\tNo se reportan transacciones en el LOG del LG SERVER, para la Fecha: "SET_COLOR(FONT,RED)\
+				"%s"SET_COLOR(FONT,RESET)"\n",buff);
+}
+query_sT listQuery_lgcheck[] = {
+ /* CONSUTA										 | LEYENDA		| fx que Porcesa campos | fx query vacia */
+ {"select dispositivos_fisico_id,posid,lgid,samid,sam_pin from config", "Datos de Configuracion del LG" /* --lg		[0]*/\
+   ,proccQuery_lgcheck_0,print_emptly_query}
+ ,{"select puerto_serie_lg from config",NULL/*"Puerto Configurado para el LG"*/,\
+		 proccQuery_lgcheck_0/*NULL*/,print_emptly_query}		/* --lg	"port" [1]*/
+ ,{"select \"puntoservicioid\" from \"DevicesBspa\"",NULL/*"PDS Asignado al Equipo" */,\
+		 proccQuery_lgcheck_0/*NULL*/,print_emptly_PDS}  /* --lg		[2]*/
+ ,{"select * from \"LogLgServer\" where date >= $1","Log del LG Server",NULL,printEmptly_listQuery_lgcheck3}  		/* --lg	log	[3]*/
+};
+
+update_sT listUpdate_lg[] = {
+ {"UPDATE config SET puerto_serie_lg='/dev/ttyLG'","Habilitamos el Puerto para el LG"}		 /* --lg	on	[0]*/
+ ,{"UPDATE config SET puerto_serie_lg='/dev/ttyLGNO'","Deshabilitamos el Puerto para el LG"} /* --lg	off	[1]*/
+};
+
+
+/*
+ * ******************************************************************************
+ * \fn int option_lg(char * arg   );
+ * \brief descripcion breve.
+ * \details descripcon detallada.
+ * \param arg : Argumento uno del tipo puntero a char, string .
+ * \return valor de retorno del tipo int.
+ * \note nota sobre la funcion.
+ * \warning mensaje de precaucion sobre la funcion.
+ * \par example :
+  <PRE>
+  op = option_lg("on" );
+  </PRE>
+ *********************************************************************************/
+int option_lg(char * arg)
+{
+	static int i;
+	/*FILE *output;*/
+	static char buff[32];
+	const char *paramValues[1];
+    if(arg == NULL)
+    {
+    	i = 0;
+    	PUTS_DEBUG("call: --lg\t\t :Sin argumentos, visualizamos los datos del LG");
+    	PUTS_DEBUG("\nLlamado \"proccessQuery(\"qTotem\",&listQuery_lgcheck[i])\"");
+    	do{
+    		/*-- consulta Cero y Uno */
+    		PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_lgcheck[i]));
+			i++;
+    	}while(i<2);
+    	/*-- consulta Dos */
+    	PRINT_STATUS_QUERY(proccessQuery("bspa",&listQuery_lgcheck[i]));
+    	NEW_LINE_BETWEEN_CMD();
+    	puts("");
+        return 0;
+    }
+    if(strcmp("on",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --lg on\t\t :Habilitamos el LG (Base de Datos)");
+    	/*-- visualizamos el estado actual del Puerto */
+    	PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_lgcheck[1]));
+    	/*-- Habilitmamos el Puerto del LG */
+    	PRINT_STATUS_QUERY(proccessUpdate("qTotem",&listUpdate_lg[0]));
+		/*-- visualizamos el estado actual del Puerto */
+		PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_lgcheck[1]));
+		NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("off",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --lg off\t\t :Deshabilitamos el LG (Base de Datos)");
+    	/*-- visualizamos el estado actual del Puerto */
+    	PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_lgcheck[1]));
+    	/*-- Habilitmamos el Puerto del LG */
+    	PRINT_STATUS_QUERY(proccessUpdate("qTotem",&listUpdate_lg[1]));
+		/*-- visualizamos el estado actual del Puerto */
+		PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_lgcheck[1]));
+		NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("log",arg) == 0)
+    {
+    	if(getCurrentDate(buff,sizeof(buff))) return 1;
+    	/*printf("\n\t\t Fecha Actual es\t: %s",buff); */
+    	PUTS_DEBUG("call: --lg log\t\t :Obtenemso el Log del LG server");
+    	/*snprintf(buff, sizeof(buff), "%s","2016-08-25"); */
+    	paramValues[0] = buff;
+    	PRINT_STATUS_QUERY(proccessQueryWhere("bspa",&listQuery_lgcheck[3],paramValues));
+    	/* PRINT_STATUS_QUERY(proccessQueryWhere("bspa",&listQuery_lgcheck[3],"2016-08-25"));*/
+    	NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    return 1;
+}
+
+
+void print_field_error(int r,int c, const char *strQ);
+void print_emptly_error(const char *strQ);
+/* void print_emptly_event(const char *strQ); */
+void print_field_bill(int r,int c, const char *strQ);
+void print_field_totem(int r,int c, const char *strQ);
+
+query_sT listQuery_err_ev[] = {
+ /* CONSUTA										 | LEYENDA		| fx que Porcesa campos | fx query vacia */
+/* [0] */ {"select * from monitoreo_devices_fuera_servicio", "Errores del Equipo:",print_field_error,print_emptly_error}			/* --error		[0]*/\
+/* [1] */,{"select * from monitoreo_devicesevents","Eventos del Equipo:",NULL,print_emptly_error/*print_emptly_event*/}		/* --event      [1]*/
+/* [2] */,{"select sum(cantidad) from billetes",NULL/*"Cantidad de Billetes En Stacker"*/\
+		 ,print_field_bill,print_emptly_query}					/* --bill       [2]*/
+/* [3] */,{"select max_billetes_stacker from config ",NULL/*"Cantidad Maxima de Billetes Establecidos para El Stacker"*/\
+		 ,print_field_bill,print_emptly_query}
+/* [4] */,{"select totem_habilitado from config","Estado del totem"\
+ 		 ,print_field_totem,NULL}
+};
+update_sT listUpdate_err_ev[] = {
+  {"delete from monitoreo_devices_fuera_servicio","Borrando la Tabla de Errores"}		/* --error	clean [0]*/
+ ,{"delete from monitoreo_devicesevents","Borrando la Tabla de Eventos"} 				/* --event clean [1]*/
+};
+
+int option_error(char * arg)
+{
+	/* usamos una pipe, para leer el comando */
+	FILE *output;
+	char buffer[32];
+	static unsigned int nline=0;
+    if(arg == NULL)
+    {
+    	PUTS_DEBUG("call: --error\t\t :Sin argumentos, visualizamos la tabla de Errores");
+    	PUTS_DEBUG("\nLlamado \"proccessQuery(\"qTotem\",&listQuery_err_ev[0])\"");
+    	/*-- consulta Cero y Uno */
+    	PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_err_ev[0]));
+    	NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("clean",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --error clean\t\t :Borrando la Tabla de Errores");
+    	/*-- Borramos la TAbla de Errores */
+    	PRINT_STATUS_QUERY(proccessUpdate("qTotem",&listUpdate_err_ev[0]));
+    	NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("printer",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --error printer\t\t :Busqueda de Error de la impresora");
+    	/*-- usamos una pipe */
+#if(defined(REMOTO_CONNECT))
+    	output = popen("cat /home/jel/Escritorio/temporal | grep \"ERROR DE CONFIGURACION MONITOREO: OBTENER LA IDENTIFICACION DE LA PRINTER\"", "r");
+#else
+		output = popen("tail -n10000 /home/c_tallion/qTotem/totem.log | grep \"ERROR DE CONFIGURACION MONITOREO: OBTENER LA IDENTIFICACION DE LA PRINTER\"", "r");/* comando "more", direccionamos*/
+#endif
+		if(fgets(buffer, sizeof(buffer), output) == NULL)
+		{
+			puts(SET_COLOR(FONT,GREEN)\
+					"\tNo se detecta Error en Impresora"\
+					SET_COLOR(FONT,RESET));
+		}
+		else
+		{
+			puts(SET_COLOR(FONT,RED)"\tError al Obtner el Printer ID, "\
+					SET_COLOR(FONT,RED)"falla en mecanismo o placa logica de la Impresora"\
+					SET_COLOR(FONT,RESET));
+		}
+		NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("stacker",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --stacker printer\t\t :Busqueda de Error de la impresora");
+    	/*-- usamos una pipe */
+#if(defined(REMOTO_CONNECT))
+    	output = popen("cat /home/jel/Escritorio/temporal | grep \"STACKER FUERA DE LUGAR\"", "r");
+#else
+		output = popen("tail -n10000 /home/c_tallion/qTotem/totem.log | grep \"STACKER FUERA DE LUGAR\"", "r");/* comando "more", direccionamos*/
+#endif
+		nline = 0;
+		while(fgets(buffer, sizeof(buffer), output) != NULL) nline ++;
+		if(nline > 5)
+		{
+			puts(SET_COLOR(FONT,RED)"\tSTACKER FUERA DE LUGAR"SET_COLOR(FONT,RESET));
+
+		}
+		else
+		{
+			puts(SET_COLOR(FONT,GREEN)"\tNo se detecta Error con el STACKER"\
+					SET_COLOR(FONT,RESET));
+		}
+		NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("posid",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --error posid\t\t :Busqueda de Error de la impresora");
+    	/*-- usamos una pipe */
+#if(defined(REMOTO_CONNECT))
+    	output = popen("cat /home/jel/Escritorio/temporal | grep \"ERROR POS ID\"", "r");
+#else
+		output = popen("tail -n10000 /home/c_tallion/qTotem/totem.log | grep \"ERROR POS ID\"", "r");
+#endif
+		/**
+		 * */
+		if(fgets(buffer, sizeof(buffer), output) != NULL)
+		{
+			puts(SET_COLOR(FONT,RED)"\tError reportado por LG, POS ID incorrecto f001"SET_COLOR(FONT,RESET));
+		}
+		else
+		{
+			puts(SET_COLOR(FONT,GREEN)"\tNo se detecta Error de POS ID"\
+					SET_COLOR(FONT,RESET));
+		}
+		NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    /*-- Opcion pasada es incorrecta */
+    PUTS_DEBUG(SET_COLOR(FONT,RED)"Opcion/Argumento pasado es incorrecto\n"SET_COLOR(FONT,RESET));
+	return 1;
+}
+
+
+
+
+int option_event(char * arg)
+{
+    if(arg == NULL)
+    {
+    	PUTS_DEBUG("call: --event\t\t :Sin argumentos, visualizamos la tabla de Eventos");
+    	PUTS_DEBUG("\nLlamado \"proccessQuery(\"qTotem\",&listQuery_err_ev[1])\"");
+    	/*-- consulta Cero y Uno */
+    	PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_err_ev[1]));
+    	NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    if(strcmp("clean",arg) == 0)
+    {
+    	PUTS_DEBUG("call: --event clean\t\t :Borrando la Tabla de Eventos");
+    	/*-- Borramos la TAbla de Errores */
+    	PRINT_STATUS_QUERY(proccessUpdate("qTotem",&listUpdate_err_ev[1]));
+    	NEW_LINE_BETWEEN_CMD();
+        return 0;
+    }
+    /*-- Opcion pasada es incorrecta */
+    PUTS_DEBUG(SET_COLOR(FONT,RED)"Opcion/Argumento pasado es incorrecto\n"SET_COLOR(FONT,RESET));
+    return 1;
+}
+
+/*
+su -l postgres -c "echo 'select totem_habilitado from config;'|psql qTotem"
+
+ */
+int option_totem(char * arg)
+{
+    if(arg != NULL) return 1;
+    PUTS_DEBUG("call: --status\t :estado de la aplicacion");
+    PUTS_DEBUG("\nLlamado \"proccessQuery(\"qTotem\",&listQuery_err_ev[4])\"");
+    /*-- consulta Cero y Uno */
+    PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_err_ev[4]));
+    return 0;
+
+
+}
+
+int option_bill(char * arg)
+{
+    if(arg != NULL) return 1;
+    PUTS_DEBUG("call: --bill\t\t :Sin argumentos, visualizamos la cantidad de billetes en Stacker");
+    PUTS_DEBUG("\nLlamado \"proccessQuery(\"qTotem\",&listQuery_err_ev[0])\"");
+    /*
+     * 1 - Primero consultamos la cantidad maxima de Billetes Establecida para el Stacker
+     * 2 - Segundo consultamos la cantidad de billetes
+     * */
+    PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_err_ev[3]));
+    PRINT_STATUS_QUERY(proccessQuery("qTotem",&listQuery_err_ev[2]));
+    NEW_LINE_BETWEEN_CMD();
+    return 0;
+}
+
+
+
+
+
+list_error_sT  listErrores[]={
+   {"E010009","TAS Habilitada"}
+  ,{"E010201","Inconsistencias con el Switch"}
+  ,{"E010121","Error de BO (Respuesta del estilo Abakpn...)"}
+  ,{"E010120","Error de Time Out de servicion contra BO"}
+  ,{"E010006","Logue de Usuario para abrir la cerradura, TRUE si es recaudador."}
+  ,{"E010301","Inicio de Apertura Forzada de Cerradura."}
+  ,{"E010302","Fin de Apertura Forzada de Cerradura."}
+  ,{"E010006","Login de Usuario Recaudador, para abrir CEM, TRUE."}
+  ,{"E010101","Estado INICIANDO."}
+  ,{"E010102","Estado DESCONECTADO."}
+  ,{"E010103","Estado LOGIN."}
+  ,{"E010110","Estado IDENTIFICANDO."}
+  ,{"E010111","Estado INICIALIZANDO."}
+  ,{"E010112","Estado DIFUNDIENDO."}
+  ,{"E010113","Estado ABRIENDO TURNO."}
+  ,{"E010114","Estado CERRANDO TURNO."}
+  ,{"E010115","Estado ENVIANDO TRANSACCIONES."}
+  ,{"E010116","Estado SOLICITANDO CREDITO."}
+  ,{NULL}
+};
+
+
+
+
+const char * get_id_error(list_error_sT *plistError, const char *arg)
+{
+	int i;
+	if(arg == NULL) return NULL;
+	i = 0;
+	while(plistError->id != NULL)
+	{
+		if(strcmp(plistError->id,arg) == 0)
+		{
+			return plistError->brief;
+		}
+		i++;
+		plistError++;
+	}
+	return (const char *) "Error No Identificado, intente con el Argumento \"--error clean\"";
+}
+
+void print_field_error(int r,int c, const char *strQ)
+{
+	if(c == 1)
+	{
+		printf("\tNro: "SET_COLOR(FONT,RED)"%s - %s"SET_COLOR(FONT,RESET)"\n"\
+				,strQ,get_id_error(listErrores,strQ));
+	}
+
+}
+
+void print_emptly_error(const char *strQ)
+{
+	/*puts(SET_COLOR(FONT,GREEN)": Equipo Sin Errores Reportados"SET_COLOR(FONT,RESET));*/
+	/*printf(SET_COLOR(FONT,GREEN)" %s VACIA"SET_COLOR(FONT,RESET),strQ);*/
+	puts(SET_COLOR(FONT,GREEN)"VACIA"SET_COLOR(FONT,RESET));
+}
+
+
+void print_field_bill(int r,int c, const char *strQ)
+{
+	static unsigned char status = 0;
+	static unsigned int maxBill,nroBill;
+	float tmp;
+	if((r != 0)&&(c != 0)) return;
+	switch(status)
+	{
+		default:
+		case 0:
+			/*
+			 * traslate string to integer or float
+			 * 	>> int atoi(const char *nptr);
+			 * 	>> long atol(const char *nptr);
+			 * 	>> long long atoll(const char *nptr);
+			 *
+			 *	>> double atof(const char *nptr);
+			 * 	>> atoi(3), atol(3), strfromd(3), strtod(3), strtol(3), strtoul(3)
+			 *
+			 *
+			 * */
+			maxBill = atoi(strQ);
+			if(maxBill == 0) maxBill = 900;
+			status = 1;
+			return;
+		case 1:
+			nroBill = atoi(strQ);
+			status = 0;
+			break;
+	}
+
+
+	tmp = (((maxBill - nroBill)*100.0)/maxBill);
+	printf(SET_COLOR(FONT,BLUE)"\tBilletes en Stacker: "SET_COLOR(FONT,GREEN)"%d\t"\
+			SET_COLOR(FONT,RESET),nroBill);
+
+	printf(SET_COLOR(FONT,BLUE)"\tDisponibilidad del Stacker: "SET_COLOR(FONT,GREEN)"%0.2f [ %c ] "\
+			SET_COLOR(FONT,RESET)"\n",tmp,37);
+
+}
+
+
+void print_field_totem(int r,int c, const char *strQ)
+{
+	if(strcmp("t",strQ) == 0)
+	{
+		puts(SET_COLOR(FONT,GREEN)"TOTEM HABILITADO"SET_COLOR(FONT,GREEN)\
+					SET_COLOR(FONT,RESET));
+	}
+	else
+	{
+		puts(SET_COLOR(FONT,RED)"TOTEM DESHABILITADO"SET_COLOR(FONT,GREEN)\
+							SET_COLOR(FONT,RESET));
+	}
+
+
+}
+
+
+
+list_usb_brief_sT listBriefUSB[]={
+		  {"Impresora",0}
+		 ,{"UPS",1}
+		 ,{"LG",2}
+		 ,{"Placa Distribuidora",3}
+		 ,{"Monitor Touch",4}
+		 ,{NULL}
+};
+
+list_usb_brief_sT listBriefUSBview[]={
+		  {"Impresora \"Coustom TG2460\"",0}
+		 ,{"UPS \"Lyonn CTB-800A\"",1}
+		 ,{"LG, modelo \"Integresys\"",2}
+		 ,{"LG, modelo \"Abakon\"",3}
+		 ,{"\"Placa Distribuidora\"",4}
+		 ,{"Monitor Tactil, modelo \"Avdo Atouch 190\"",5}
+		 ,{"Monitor Tactil, modelo \"NUEVO etapa 1\"",6}
+		 ,{NULL}
+};
+
+list_usb_sT listIdEnUSB[]={
+		  {"0dd4:01a7"/*,"Impresora \"Coustom TG2460\""*/,0}
+		 ,{"0665:5161"/*,"UPS \"Lyonn CTB-800A\""*/,1}
+		 ,{"10c4:8855"/*,"LG, modelo \"Integresys\""*/,2}
+		 ,{"10c4:ea60"/*,"LG, modelo \"Abakon\""*/,2}
+		 ,{"04d8:000a"/*,"\"Placa Distribuidora\""*/,3}
+		 ,{"24b8:0001"/*,"Monitor Tactil, modelo \"Avdo Atouch 190\""*/,4}
+		 ,{"14e1:6000"/*,"Monitor Tactil, modelo \"NUEVO etapa 1\""*/,4}
+		 ,{NULL}
+};
+list_usb_sT listIdEnUSBview[]={
+		  {"0dd4:01a7"/*,"Impresora \"Coustom TG2460\""*/,0}
+		 ,{"0665:5161"/*,"UPS \"Lyonn CTB-800A\""*/,1}
+		 ,{"10c4:8855"/*,"LG, modelo \"Integresys\""*/,2}
+		 ,{"10c4:ea60"/*,"LG, modelo \"Abakon\""*/,3}
+		 ,{"04d8:000a"/*,"\"Placa Distribuidora\""*/,4}
+		 ,{"24b8:0001"/*,"Monitor Tactil, modelo \"Avdo Atouch 190\""*/,5}
+		 ,{"14e1:6000"/*,"Monitor Tactil, modelo \"NUEVO etapa 1\""*/,6}
+		 ,{NULL}
+};
+
+
+
+void check_usb_brief(unsigned int st,list_usb_brief_sT *plistUSB)
+{
+	unsigned int tmp;
+
+	while(plistUSB->brief != NULL)
+	{
+		tmp = 0x01 << plistUSB->en;
+		if(st & tmp)
+		{
+			printf(SET_COLOR(FONT,BLUE)"\tDISPOSITIVO: "\
+					SET_COLOR(FONT,GREEN)"%s, CONECTADO"\
+					SET_COLOR(FONT,RESET)"\n"\
+					,plistUSB->brief);
+		}
+		else
+		{
+			printf(SET_COLOR(FONT,BLUE)"\tDISPOSITIVO: "\
+					SET_COLOR(FONT,RED)"%s, NO CONECTADO"\
+					SET_COLOR(FONT,RESET)"\n"\
+					,plistUSB->brief);
+		}
+		plistUSB++;
+	}
+}
+
+int get_status_usb(list_usb_sT *plistUSB, char *arg)
+{
+	/*int i;*/
+	if(arg == NULL) return 0;
+	/*i = 0;*/
+	while(plistUSB->id != NULL)
+	{
+		if(strcmp(plistUSB->id,arg) == 0)
+		{
+			/*return i;*/
+			return plistUSB->en;
+		}
+		/*i++;*/
+		plistUSB++;
+	}
+	return -1;
+}
+
+/*
+ * ******************************************************************************
+ * \fn int option_usb(char * arg   );
+ * \brief descripcion breve.
+ * \details descripcon detallada.
+ * \param arg : Argumento uno del tipo puntero a char, string .
+ * \return valor de retorno del tipo int.
+ * \note nota sobre la funcion.
+ * \warning mensaje de precaucion sobre la funcion.
+ * \par example :
+  <PRE>
+  op = option_lg("on" );
+  </PRE>
+ *********************************************************************************/
+int option_usb(char * arg)
+{
+	/* usamos una pipe, para leer el comando */
+	FILE *output;
+	char buffer[16];
+	static unsigned int status;
+	int tmp;
+	do{
+		if(arg == NULL)
+		{
+			PUTS_DEBUG("call: --usb\t\t :Realizamos el check de los dispositivos USB necesarios.");
+			output = popen("lsusb | cut -d \" \" -f 6", "r");/* comando "lsusb", direccionamos*/
+			if( output == NULL)
+			{
+				PUTS_DEBUG("Error no se puede abrir el proceso mediante pipe");
+				return 1;
+			}
+			status = 0;
+			while (fgets(buffer, 10, output) != NULL)
+			{
+				tmp = get_status_usb(/*listDeviceUSB*/listIdEnUSB,buffer);
+				if(tmp >= 0)
+				{
+					status |= (0x01 << tmp);
+				}
+			}
+			/* FIXME cambiar esta funcion
+			 * */
+			check_usb_brief(status,listBriefUSB);
+			break;
+		}
+		if(strcmp("view",arg) == 0)
+		{
+			PUTS_DEBUG("call: --usb view\t\t :Realizamos el check de los dispositivos USB necesarios.");
+			output = popen("lsusb | cut -d \" \" -f 6", "r");/* comando "lsusb", direccionamos*/
+			if( output == NULL)
+			{
+				PUTS_DEBUG("Error no se puede abrir el proceso mediante pipe");
+				return 1;
+			}
+			status = 0;
+			while (fgets(buffer, 10, output) != NULL)
+			{
+				tmp = get_status_usb(/*listDeviceUSB*/listIdEnUSBview,buffer);
+				if(tmp >= 0)
+				{
+					status |= (0x01 << tmp);
+				}
+			}
+
+			check_usb_brief(status,listBriefUSBview);
+			break;
+		}
+		return 1;
+	}while(0);
+	puts("");
+	PCLOSE(output);
+	NEW_LINE_BETWEEN_CMD();
+	return 0;
+
+}
+
+int option_ups(char * arg)
+{
+	/* usamos una pipe, para leer el comando */
+	FILE *output;
+	char buffer[32];
+
+	if(arg != NULL) return 1;
+	/**/
+	PUTS_DEBUG("call: --ups\t\t :Realizamos el check de la UPS.");
+	/*
+	 * */
+	/* output = popen("upsc apc | grep -e\"driver.version:\" -e\"battery.voltage\" -e\"battery.charge\" -e\"input.voltage\" -e\"output.current\"", "r"); */
+#if(defined(REMOTO_CONNECT))
+	output = popen("cat /home/jel/Escritorio/temporal | grep -e\"battery.voltage:\" -e\"input.voltage:\" -e\"output.current.nominal:\"", "r");
+#else
+	output = popen("upsc apc | grep -e\"battery.voltage:\" -e\"input.voltage:\" -e\"output.current\"", "r");/* comando "more", direccionamos*/
+#endif
+	if( output == NULL)
+	{
+		puts("Error");
+		PUTS_DEBUG("Error no se puede abrir el proceso mediante pipe");
+		return 1;
+	}
+	while (fgets(buffer, sizeof(buffer), output) != NULL)
+	{
+		printf(SET_COLOR(FONT,BLUE)"%s"SET_COLOR(FONT,RESET), buffer);
+	}
+	PCLOSE(output);
+	return 0;
+}
+
+
+
+
+int option_help(char * arg)
+{
+	if(arg != NULL) return 1;
+	/*-- definimos un puntero y lo inicializamos */
+	menu_t *pmenu = menu_option;
+	HEAD_help(ptrNmbCmd);
+    while(pmenu->opt != NULL)
+    {
+    	printf("OPCION : "SET_COLOR(FONT,BLUE)"\"%s\""\
+    			SET_COLOR(FONT,RESET),pmenu->opt);
+
+    	printf("\nUso y Argumentos:\n"SET_COLOR(FONT,GREEN)"%s\n"\
+    				SET_COLOR(FONT,RESET),pmenu->leyend);
+        pmenu++;
+    }
+    TAIL_help(ptrNmbCmd);
+	return 0;
+}
+
+int option_version(char *arg)
+{
+	if(arg != NULL) return 1;
+	PRINTF_DEBUG("Comando : "SET_COLOR(FONT,BLUE)"%s\n"\
+	    			,OPTION(version));
+	puts("\t"SET_COLOR(FONT,GREEN)"Version de la aplicacion "VERSION_STRING()\
+			SET_COLOR(FONT,RESET));
+	return 0;
+}
+
+int option_author(char *arg)
+{
+	if(arg != NULL)
+	{
+		if(strcmp("AUTHOR",arg) == 0)
+		{
+			printf(SET_COLOR(FONT,CYAN)"\n\n%s\n"\
+						SET_COLOR(FONT,RESET),AUTHOR_STRINGbrief());
+			return 0;
+		}
+		else return 1;
+	}
+	PRINTF_DEBUG("Comando : "SET_COLOR(FONT,BLUE)"%s\n"\
+	    			,OPTION(author));
+	puts("\t"SET_COLOR(FONT,GREEN)"Autor de la Aplicacion: "AUTHOR_STRING()\
+			SET_COLOR(FONT,RESET));
+return 0;
+}
+
+
+
+void print_field_query(int r,int c, const char *strQ)
+{
+	printf("\tFila: %d\tColumna: %d\tCampo: %s\t",r,c,strQ);
+}
+
+void print_emptly_query(const char *stley)
+{
+	printf("\tConsulta: "SET_COLOR(FONT,RED)\
+			"%s"SET_COLOR(FONT,RESET)"  VACIA\n",stley);
+}
+
+
+
+int proccessQuery(const char *dbName, query_sT *pListQuery)
+{
+	PGconn *conn; /* para la conexion con la base de datos*/
+	PGresult *res;/* para almacenar el objeto resultado de la query */
+	int rows, i;
+	int ncols,j;
+	char connInfo[128]= CONN_INFO();
+
+	if(dbName == NULL )
+	{
+		PUTS_DEBUG("String connInfo Nulo");
+		return 1;
+	}
+	if(pListQuery == NULL )
+	{
+		PUTS_DEBUG("Lista de consulta pListQuery Nulo");
+		return 1;
+	}
+	strcat(connInfo,dbName);
+	/* Make a connection to the database */
+	conn = PQconnectdb(connInfo);
+	/* Verifique que la conexión de backend se haya realizado correctamente */
+	if (PQstatus(conn) != CONNECTION_OK)
+	{
+		fprintf(stderr, "Connection to database failed: %s",
+				PQerrorMessage(conn));
+		PQfinish(conn);
+		return 1;
+	}
+	/*-- preparamos para hacer las consulta sobre */
+	if(pListQuery->query != NULL)
+	{
+		/* Establezca una ruta de búsqueda siempre segura, para que los
+		 * usuarios malintencionados no puedan tomar el control. */
+
+		if(pListQuery->leyenda != NULL ) /* Si la leyenda es distinta de NULL, imprimimos la misma */
+		{
+			printf(SET_COLOR(FONT,BLUE)"\t%s\t"SET_COLOR(FONT,RESET)\
+				,pListQuery->leyenda);
+		}
+		res = PQexec(conn,pListQuery->query);
+		if (PQresultStatus(res) != PGRES_TUPLES_OK)
+		{
+			fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return 1;
+		}
+		/*-- obtemos el numero de Filas, del resultado de la consulta */
+		rows = PQntuples(res);
+		ncols = PQnfields(res);
+		if(rows == 0)
+		{
+			if((pListQuery->emptlyQuery != NULL))
+			{
+				if((pListQuery->leyenda != NULL))
+				{
+					(pListQuery->emptlyQuery)(pListQuery->leyenda);
+				}
+				else
+					(pListQuery->emptlyQuery)(NULL);
+			}
+		}
+		if((rows >= 1)&&(ncols < 1))
+		{
+			puts("");
+		}
+		for(i=0; i<rows; i++)
+		{
+			/* PQgetvalue(resultQuery, nroFila, nroColumna) */
+			for(j=0;j<ncols;j++)
+			{
+				if(pListQuery->proccessQuery == NULL)
+				{
+					printf("\t%s",PQgetvalue(res, i, j));
+				}
+				else
+				{
+					(pListQuery->proccessQuery)(i,j,PQgetvalue(res, i, j));
+				}
+			}
+			if(pListQuery->proccessQuery == NULL) puts("");
+		}
+	}
+	/*
+	 * Debe siempre hacer un  PQclear sobre PGresult siempre que ya no sea necesario
+	 * para evitar pérdidas de memoria
+	 */
+	/*-- es aconsejable limpiar antes de salir */
+	PQclear(res);
+	PQfinish(conn);
+	return 0;
+}
+
+int proccessUpdate(const char *dbName, update_sT *pListUpdate)
+{
+	PGconn *conn; /* para la conexion con la base de datos*/
+	PGresult *res;/* para almacenar el objeto resultado de la query */
+	char connInfo[128]= CONN_INFO();
+
+	if(dbName == NULL )
+	{
+		PUTS_DEBUG("String connInfo Nulo");
+		return 1;
+	}
+	if(pListUpdate == NULL )
+	{
+		PUTS_DEBUG("Lista de consulta pListQuery Nulo");
+		return 1;
+	}
+	/*-- armamos el string para establecer la conexion*/
+	strcat(connInfo,dbName);
+	/* Make a connection to the database */
+	conn = PQconnectdb(connInfo);
+	/* Verifique que la conexión de backend se haya realizado correctamente */
+	if (PQstatus(conn) != CONNECTION_OK)
+	{
+		fprintf(stderr, "Connection to database failed: %s",
+				PQerrorMessage(conn));
+		PQfinish(conn);
+		return 1;
+	}
+	/*-- preparamos para haer las actualizacion */
+	if(pListUpdate->update != NULL)
+	{
+		/* Indicamos el Inicio de un Bloque de Actualizacion */
+		res = PQexec(conn,"BEGIN");
+		if (PQresultStatus(res) != PGRES_COMMAND_OK)
+		{
+			fprintf(stderr, "BEGIN BLOCK failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return 1;
+		}
+		PQclear(res);
+		/*-- Realizamos la Actualizacion del campo especificado */
+		if(pListUpdate->leyenda != NULL)/* Imprimimos la leyenda, si esta no es null */
+		{
+			printf(SET_COLOR(FONT,BLUE)"\t%s\t"SET_COLOR(FONT,RESET)\
+				,pListUpdate->leyenda);
+		}
+		res = PQexec(conn,pListUpdate->update);
+		if (PQresultStatus(res) != PGRES_COMMAND_OK)
+		{
+			fprintf(stderr, "UPDATE/INSERT failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return 1;
+		}
+		puts("");
+		/* Realizamos el commit del blocke de actualizacion */
+		res = PQexec(conn, "COMMIT");
+		if (PQresultStatus(res) != PGRES_COMMAND_OK)
+		{
+			fprintf(stderr, "COMMIT BLOCK failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return 1;
+		}
+	}
+	/*
+	 * Debe siempre hacer un  PQclear sobre PGresult siempre que ya no sea necesario
+	 * para evitar pérdidas de memoria
+	 */
+	PQclear(res);
+	PQfinish(conn);
+	return 0;
+}
+
+
+int proccessQueryWhere(const char *dbName, query_sT *pListQuery, const char * const *strWhere)
+{
+	PGconn *conn; /* para la conexion con la base de datos*/
+	PGresult *res;/* para almacenar el objeto resultado de la query */
+	int rows, i;
+	int ncols,j;
+	char connInfo[128]= CONN_INFO();
+
+	if(dbName == NULL )
+	{
+		PUTS_DEBUG("String connInfo Nulo");
+		return 1;
+	}
+	if(pListQuery == NULL )
+	{
+		PUTS_DEBUG("Lista de consulta pListQuery Nulo");
+		return 1;
+	}
+	strcat(connInfo,dbName);
+	/* Make a connection to the database */
+	conn = PQconnectdb(connInfo);
+	/* Verifique que la conexión de backend se haya realizado correctamente */
+	if (PQstatus(conn) != CONNECTION_OK)
+	{
+		fprintf(stderr, "Connection to database failed: %s",
+				PQerrorMessage(conn));
+		PQfinish(conn);
+		return 1;
+	}
+	/*-- preparamos para hacer las consulta sobre */
+	if(pListQuery->query != NULL)
+	{
+		/* Establezca una ruta de búsqueda siempre segura, para que los
+		 * usuarios malintencionados no puedan tomar el control. */
+		if(pListQuery->leyenda != NULL) /* Imprimimos la leyenda, si la misma no es null */
+		{
+			printf(SET_COLOR(FONT,CYAN)"\t%s\t"SET_COLOR(FONT,RESET)\
+				,pListQuery->leyenda);
+		}
+		/*res = PQexec(conn,pListQuery->query);*/
+		res = PQexecParams(conn, pListQuery->query
+				, 1 /* N° de parametros a actualizar en la query */
+				, NULL /* Tipos de Parametros, todos los paremetros '1' del mismo tipo */
+				, strWhere /* Valor actual del Parametro, un string pra este caso */
+		        , NULL /* Longitud del parametro Binario, NULL para uso de String*/
+				, NULL /* Formato del Parametro, NULL para String  */
+				, 0    /* Formato del Resultado , '0' resultado en formato String */
+				);
+		if (PQresultStatus(res) != PGRES_TUPLES_OK)
+		{
+			fprintf(stderr, "SELECT with WHERE failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return 1;
+		}
+		/*-- obtnemos el numero de Filas, del resultado de la consulta */
+		rows = PQntuples(res);
+		ncols = PQnfields(res);
+		if(rows == 0)
+		{
+			if((pListQuery->emptlyQuery != NULL))
+			{
+				if((pListQuery->leyenda != NULL))
+				{
+					(pListQuery->emptlyQuery)(pListQuery->leyenda);
+					/*(pListQuery->emptlyQuery)(pListQuery->query);*/
+				}
+				else
+					(pListQuery->emptlyQuery)(NULL);
+			}
+		}
+		if((rows !=1)&&(ncols !=1))
+		{
+			puts("");
+		}
+		for(i=0; i<rows; i++)
+		{
+			/* PQgetvalue(resultQuery, nroFila, nroColumna) */
+
+			for(j=0;j<ncols;j++)
+			{
+				if(pListQuery->proccessQuery == NULL)
+				{
+					printf("\t%s",PQgetvalue(res, i, j));
+				}
+				else
+				{
+					(pListQuery->proccessQuery)(i,j,PQgetvalue(res, i, j));
+				}
+			}
+			if(pListQuery->proccessQuery == NULL) puts("");
+		}
+	}
+	/*
+	 * Debe siempre hacer un  PQclear sobre PGresult siempre que ya no sea necesario
+	 * para evitar pérdidas de memoria
+	 */
+	/*-- es aconsejable limpiar antes de salir */
+	PQclear(res);
+	PQfinish(conn);
+	return 0;
+}
+
+unsigned char getCurrentDate(char *pbuff, size_t len)
+{
+	 FILE * file2pipe;
+	 if(pbuff == NULL) return 1;
+	 file2pipe = popen("date +\"%Y-%m-%d\"", "r");/* comando "more", direccionamos*/
+	 if( file2pipe == NULL)
+	 {
+		 PUTS_DEBUG(SET_COLOR(FONT,RED)\
+				 "Error \"getCurrentDate()\" no se puede abrir el proceso mediante pipe"\
+				 SET_COLOR(FONT,RESET));
+		 PCLOSE(file2pipe);
+		 return 1;
+	 }
+	 fgets(pbuff, len, file2pipe);
+	 PCLOSE(file2pipe);
+	 return 0;
+}
+
+
+
 /*
 ┌────────────────────────────────────────────────────────────────────────────────────┐           
 │                                                                                    │  
@@ -3695,7 +5337,7 @@ TODO: version 02
 *
 */
 #else /* #if (__apis_version__ == 1) */
-#warning "__apis_version__ estabelcido de forma incorrecta"
+/* #warning "__apis_version__ estabelcido de forma incorrecta"*/
 #endif /* #if (__apis_version__ == 1) */
 
 
