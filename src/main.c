@@ -40,7 +40,6 @@ macros @ref EXIT_FAIL y @ref EXIT_SUCCESS*/
 #include <math.h>
 */
 #include <typedef.h>
-#include <main.h>
 /*  
  * **********************************************************************************************
  *
@@ -68,7 +67,7 @@ macros @ref EXIT_FAIL y @ref EXIT_SUCCESS*/
 #define __main_version__    8
 #endif
 
-
+#include <main.h>
 
 
 /* 
