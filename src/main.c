@@ -145,78 +145,7 @@ int main(int argn,char **arg)
 TODO: main version 1
 */
 #include <string.h>
-#define FONT_COLOR_BLACK           "\e[0;30m"
-#define FONT_COLOR_RED               "\e[0;31m"
-#define FONT_COLOR_GREEN         "\e[0;32m"
-#define FONT_COLOR_YELLOW        "\e[0;33m"
-#define FONT_COLOR_BLUE          "\e[0;34m"
-#define FONT_COLOR_MAGENTA    "\033[0;35m"
-#define FONT_COLOR_CYAN          "\e[0;36m"
-#define FONT_COLOR_WHITE         "\e[0;37m"
-#define FONT_COLOR_RESET           "\e[0m"
 
-#define SET_COLOR_FONT(Color)        FONT_COLOR_##Color
-
-
-/**/
-#define BACKGROUND_COLOR_BLACK           "\e[0;48;5;21m"
-#define BACKGROUND_COLOR_RED               "\e[0;48;5;31m"
-#define BACKGROUND_COLOR_GREEN           "\e[0;48;5;41m"
-#define BACKGROUND_COLOR_YELLOW         "\e[0;48;5;51m"
-#define BACKGROUND_COLOR_BLUE              "\e[0;48;5;61m"
-#define BACKGROUND_COLOR_MAGENTA      "\e[0;48;5;71m"
-#define BACKGROUND_COLOR_CYAN             "\e[0;48;5;81m"
-#define BACKGROUND_COLOR_WHITE            "\e[0;48;5;91m"
-#define BACKGROUND_COLOR_RESET             "\e[0;48;2;0;0;0m"
-
-
-#define SET_COLOR_BACK(Color)        BACKGROUND_COLOR_##Color
-
-#define PRINTF_COLOR_N2                 "\033[0;40m"
-#define PRINTF_COLOR_N3                 "\033[0;41m"
-
-#define PRINTF_COLOR_RESET           "\033[0m"
-
-
-
-/**
- * ******************************************************************//**
- * \def SET_COLOR(Type,Color);
- * \brief macro para establecer el color de Font y background de la
- * salida por consola.
- * \details descripcion detallada.
- * \param Type : Tipo de color  a establecer, este puede ser
- * 		\li BACK : para establecer el color de background.
- * 		\li FONT : para establecer el color de font.
- * \param Color : Argumento dos.
- * \return  Nothing
- * \note nota sobre la macro funcion.
- * \warning mensaje de precaucion.
- * \par example :
- <PRE>
-	printf(SET_COLOR(FONT,RED)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,GREEN)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,YELLOW)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,BLUE)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,MAGENTA)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,CYAN)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,WHITE)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,BLACK)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    //
-    printf(SET_COLOR(BACK,RED)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,GREEN)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,YELLOW)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,BLUE)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,MAGENTA)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,CYAN)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,WHITE)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,BLACK)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-
- </PRE>
- *
- *********************************************************************/
-#define SET_COLOR(Type,Color) \
-    SET_COLOR_##Type(Color)
 
  /**
  * \typedef fx_optiont_pfT
@@ -1538,13 +1467,6 @@ TODO: main version 7
  * y lo podmeos agregar desde Project -> Properties -> Patha and Symbols {solapa} symbols */
 /* #define REMOTO_CONNECT */
 
-#if (defined(DEBUG_PRINT_DISABLE))
-#define PRINTF_DEBUG(...)
-#define PUTS_DEBUG(...)
-#else
-#define PRINTF_DEBUG(...)	printf(__VA_ARGS__)
-#define PUTS_DEBUG(...)	puts(__VA_ARGS__)
-#endif
 
 /*-- new line between commands*/
 #define NEW_LINE_BETWEEN_CMD() /*\
@@ -1577,80 +1499,6 @@ TODO: main version 7
 	}\
 }
 #endif
-
-
-
-
-
-
-
-
-#define FONT_COLOR_BLACK		"\e[0;30m"
-#define FONT_COLOR_RED          "\e[0;31m"
-#define FONT_COLOR_GREEN        "\e[0;32m"
-#define FONT_COLOR_YELLOW       "\e[0;33m"
-#define FONT_COLOR_BLUE         "\e[0;34m"
-#define FONT_COLOR_MAGENTA    	"\033[0;35m"
-#define FONT_COLOR_CYAN         "\e[0;36m"
-#define FONT_COLOR_WHITE        "\e[0;37m"
-#define FONT_COLOR_RESET        "\e[0m"
-
-#define SET_COLOR_FONT(Color)        FONT_COLOR_##Color
-
-
-/**/
-#define BACKGROUND_COLOR_BLACK           "\e[0;48;5;21m"
-#define BACKGROUND_COLOR_RED               "\e[0;48;5;31m"
-#define BACKGROUND_COLOR_GREEN           "\e[0;48;5;41m"
-#define BACKGROUND_COLOR_YELLOW         "\e[0;48;5;51m"
-#define BACKGROUND_COLOR_BLUE              "\e[0;48;5;61m"
-#define BACKGROUND_COLOR_MAGENTA      "\e[0;48;5;71m"
-#define BACKGROUND_COLOR_CYAN             "\e[0;48;5;81m"
-#define BACKGROUND_COLOR_WHITE            "\e[0;48;5;91m"
-#define BACKGROUND_COLOR_RESET             "\e[0;48;2;0;0;0m"
-
-
-#define SET_COLOR_BACK(Color)        BACKGROUND_COLOR_##Color
-
-/**
- * ******************************************************************//**
- * \def SET_COLOR(Type,Color);
- * \brief macro para establecer el color de Font y background de la
- * salida por consola.
- * \details descripcion detallada.
- * \param Type : Tipo de color  a establecer, este puede ser
- * 		\li BACK : para establecer el color de background.
- * 		\li FONT : para establecer el color de font.
- * \param Color : Argumento dos.
- * \return  Nothing
- * \note nota sobre la macro funcion.
- * \warning mensaje de precaucion.
- * \par example :
- <PRE>
-	printf(SET_COLOR(FONT,RED)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,GREEN)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,YELLOW)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,BLUE)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,MAGENTA)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,CYAN)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,WHITE)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    printf(SET_COLOR(FONT,BLACK)"\t El Numero aleatorio de %u\n"SET_COLOR(FONT,RESET),get_random(5));
-    //
-    printf(SET_COLOR(BACK,RED)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,GREEN)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,YELLOW)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,BLUE)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,MAGENTA)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,CYAN)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,WHITE)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-    printf(SET_COLOR(BACK,BLACK)"\t El Numero aleatorio de %u\n"SET_COLOR(BACK,RESET),get_random(5));
-
- </PRE>
- *
- *********************************************************************/
-#define SET_COLOR(Type,Color) \
-    SET_COLOR_##Type(Color)
-
 
 
 #if (defined(DEBUG_PRINT_DISABLE))
