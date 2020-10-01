@@ -3544,7 +3544,6 @@ int proccessQuery(const char *dbName, query_sT *pListQuery)
 		}
 		for(i=0; i<rows; i++)
 		{
-			/* PQgetvalue(resultQuery, nroFila, nroColumna) */
 			for(j=0;j<ncols;j++)
 			{
 				if(pListQuery->proccessQuery == NULL)
@@ -3561,9 +3560,7 @@ int proccessQuery(const char *dbName, query_sT *pListQuery)
 	}
 	/*
 	 * Debe siempre hacer un  PQclear sobre PGresult siempre que ya no sea necesario
-	 * para evitar pérdidas de memoria
-	 */
-	/*-- es aconsejable limpiar antes de salir */
+	 * para evitar pérdidas de memoria. "Es aconsejable limpiar antes de salir" */
 	PQclear(res);
 	PQfinish(conn);
 	return 0;
@@ -3684,7 +3681,6 @@ int proccessQueryWhere(const char *dbName, query_sT *pListQuery, const char * co
 			printf(SET_COLOR(FONT,CYAN)"\t%s\t"SET_COLOR(FONT,RESET)\
 				,pListQuery->leyenda);
 		}
-		/*res = PQexec(conn,pListQuery->query);*/
 		res = PQexecParams(conn, pListQuery->query
 				, 1 /* N° de parametros a actualizar en la query */
 				, NULL /* Tipos de Parametros, todos los paremetros '1' del mismo tipo */
@@ -3710,7 +3706,6 @@ int proccessQueryWhere(const char *dbName, query_sT *pListQuery, const char * co
 				if((pListQuery->leyenda != NULL))
 				{
 					(pListQuery->emptlyQuery)(pListQuery->leyenda);
-					/*(pListQuery->emptlyQuery)(pListQuery->query);*/
 				}
 				else
 					(pListQuery->emptlyQuery)(NULL);
@@ -3722,8 +3717,6 @@ int proccessQueryWhere(const char *dbName, query_sT *pListQuery, const char * co
 		}
 		for(i=0; i<rows; i++)
 		{
-			/* PQgetvalue(resultQuery, nroFila, nroColumna) */
-
 			for(j=0;j<ncols;j++)
 			{
 				if(pListQuery->proccessQuery == NULL)
@@ -3765,9 +3758,6 @@ unsigned char getCurrentDate(char *pbuff, size_t len)
 	 PCLOSE(file2pipe);
 	 return 0;
 }
-
-
-
 /*
 ┌────────────────────────────────────────────────────────────────────────────────────┐           
 │                                                                                    │  
